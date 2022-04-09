@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'check'  => true,
-    'digits' => 3,
     'map'    => [],
+    'digits' => 3,
+    'check'  => true,
 ];

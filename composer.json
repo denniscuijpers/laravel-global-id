@@ -29,7 +29,7 @@
         "DennisCuijpers\\GlobalId\\GlobalIdServiceProvider"
       ],
       "aliases": {
-        "GlobalId": "DennisCuijpers\\GlobalId\\Facades\\GlobalId"
+        "Gid": "DennisCuijpers\\GlobalId\\Facades\\Gid"
       }
     }
   }
