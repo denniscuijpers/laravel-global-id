@@ -8,6 +8,7 @@ use DennisCuijpers\GlobalId\GlobalId;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static array map(array $map = null)
  * @method static int encode(string $class, int $id)
  * @method static array|null decode(int $gid)
  * @method static string|null class(int $gid)

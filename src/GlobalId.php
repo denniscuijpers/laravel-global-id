@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DennisCuijpers\GlobalId;
 
+use DennisCuijpers\GlobalId\Exceptions\GlobalIdException;
+
 class GlobalId
 {
     private const DAMM_TABLE = [
@@ -19,21 +21,63 @@ class GlobalId
         [2, 5, 8, 1, 4, 3, 6, 7, 9, 0],
     ];
 
-    public function __construct(private array $config)
+    private int $multiplier;
+    private bool $check;
+    private array $map;
+
+    public function __construct(array $config)
     {
+        $this->multiplier = 10 ** $config['digits'];
+        $this->check      = $config['check'];
+
+        $this->map($config['map']);
+    }
+
+    public function map(array $map = null): array
+    {
+        if ($map === null) {
+            return $this->map;
+        }
+
+        if (count($map) !== count(array_unique($map))) {
+            throw new GlobalIdException('Map has duplicates.');
+        }
+
+        $this->map = [];
+
+        foreach ($map as $class => $index) {
+            $class = ltrim($class, '\\');
+
+            if (!class_exists($class)) {
+                throw new GlobalIdException("Invalid class: `{$class}`.");
+            }
+
+            if (!is_int($index) || $index < 1 || $index >= $this->multiplier) {
+                throw new GlobalIdException("Invalid index: `{$index}`.");
+            }
+
+            $this->map[$class] = $index;
+        }
+
+        return $this->map;
     }
 
     public function encode(string $class, int $id): int
     {
-        $index = array_search($class, $this->config['map'], true);
+        $class = ltrim($class,'\\');
+        $index = array_search($class, $this->map, true);
 
-        if ($index === false || $id < 1) {
-            return -1;
+        if (!isset($this->map[$class])) {
+            throw new GlobalIdException("Unknown class: {$class}");
         }
 
-        $number = $id * 10 ** $this->config['digits'] + $index;
+        if ($id < 1) {
+            throw new GlobalIdException("Invalid id: {$id}");
+        }
 
-        if ($this->config['check']) {
+        $number = $id * $this->multiplier + $this->map[$class];
+
+        if ($this->check) {
             $number = $number * 10 + $this->check($number);
         }
 
@@ -42,7 +86,7 @@ class GlobalId
 
     public function decode(int $gid): ?array
     {
-        if ($this->config['check']) {
+        if ($this->check) {
             $check = $gid % 10;
             $gid   = intdiv($gid, 10);
 
@@ -51,11 +95,11 @@ class GlobalId
             }
         }
 
-        $id    = intdiv($gid, 10 ** $this->config['digits']);
-        $index = $gid % 10 ** $this->config['digits'];
-        $class = $this->config['map'][$index] ?? null;
+        $id    = intdiv($gid, $this->multiplier);
+        $index = $gid % $this->multiplier;
+        $class = array_search($index, $this->map);
 
-        if ($class === null || $id < 1) {
+        if ($class === false || $id < 1) {
             return null;
         }
 
@@ -75,7 +119,7 @@ class GlobalId
     public function make($object): int
     {
         if (!is_object($object)) {
-            return -1;
+            throw new GlobalIdException("Not a object");
         }
 
         return $this->encode($object::class, $object->id ?? 0);
