@@ -116,8 +116,12 @@ class GlobalId
         return $this->decode($gid)[1] ?? null;
     }
 
-    public function make($object): int
+    public function make($object): ?int
     {
+        if ($object === null) {
+            return null;
+        }
+
         if (!is_object($object)) {
             throw new GlobalIdException("Not a object");
         }

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array|null decode(int $gid)
  * @method static string|null class(int $gid)
  * @method static int|null id(int $gid)
- * @method static int make($object)
+ * @method static int|null make($object)
  * @method static find(int $gid)
  *
  * @see GlobalId
