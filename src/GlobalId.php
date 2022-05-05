@@ -64,7 +64,7 @@ class GlobalId
 
     public function encode(string $class, int $id): int
     {
-        $class = ltrim($class,'\\');
+        $class = ltrim($class, '\\');
         $index = array_search($class, $this->map, true);
 
         if (!isset($this->map[$class])) {
@@ -97,7 +97,7 @@ class GlobalId
 
         $id    = intdiv($gid, $this->multiplier);
         $index = $gid % $this->multiplier;
-        $class = array_search($index, $this->map);
+        $class = array_search($index, $this->map, true);
 
         if ($class === false || $id < 1) {
             return null;
@@ -123,7 +123,7 @@ class GlobalId
         }
 
         if (!is_object($object)) {
-            throw new GlobalIdException("Not a object");
+            throw new GlobalIdException('Not a object');
         }
 
         return $this->encode($object::class, $object->id ?? 0);
